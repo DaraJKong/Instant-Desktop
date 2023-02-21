@@ -14,55 +14,75 @@
 
 #![windows_subsystem = "windows"]
 
-use widestring::U16CString;
-use windows::{
-    core::PCWSTR,
-    w,
-    Win32::{
-        Foundation::{HINSTANCE, HWND},
-        UI::{Shell, WindowsAndMessaging::MB_ICONASTERISK, HiDpi::{SetProcessDpiAwareness, PROCESS_PER_MONITOR_DPI_AWARE}},
-    },
-};
+/*use druid::widget::{AspectRatioBox, Button, Flex, Label, LineBreaking};
+use druid::{AppLauncher, Color, Widget, WidgetExt, WindowDesc};*/
 
-use instant_desktop::Monitors;
+use instant_desktop::windows::Monitors;
+
+/*fn build_app() -> impl Widget<u32> {
+    // Usually we put all the widgets in one big tree using builder-style
+    // methods. Sometimes we split them up in declarations to increase
+    // readability. In this case we also have some recurring elements,
+    // we add those in a loop later on.
+    let mut col = Flex::column().with_child(
+        // The `Flex`'s first child is another Flex! In this case it is
+        // a row.
+        Flex::row()
+            // The row has its own children.
+            .with_child(
+                Label::new("One")
+                    .fix_width(60.0)
+                    .background(Color::rgb8(0x77, 0x77, 0))
+                    .border(Color::WHITE, 3.0)
+                    .center(),
+            )
+            // Spacing element that will fill all available space in
+            // between label and a button. Notice that weight is non-zero.
+            // We could have achieved a similar result with expanding the
+            // width and setting the main-axis-allignment to SpaceBetween.
+            .with_flex_spacer(1.0)
+            .with_child(Button::new("Two").padding(20.))
+            // After we added all the children, we can set some more
+            // values using builder-style methods. Since these methods
+            // dont return the original `Flex` but a SizedBox and Container
+            // respectively, we have to put these at the end.
+            .fix_height(100.0)
+            //turquoise
+            .background(Color::rgb8(0, 0x77, 0x88)),
+    );
+
+    for i in 0..5 {
+        // Give a larger weight to one of the buttons for it to
+        // occupy more space.
+        let weight = if i == 2 { 3.0 } else { 1.0 };
+        // call `expand_height` to force the buttons to use all their provided flex
+        col.add_flex_child(Button::new(format!("Button #{i}")).expand_height(), weight);
+    }
+
+    // aspect ratio box
+    let aspect_ratio_label = Label::new("This is an aspect-ratio box. Notice how the text will overflow if the box becomes too small.")
+        .with_text_color(Color::BLACK)
+        .with_line_break_mode(LineBreaking::WordWrap)
+        .center();
+    let aspect_ratio_box = AspectRatioBox::new(aspect_ratio_label, 4.0)
+        .border(Color::BLACK, 1.0)
+        .background(Color::WHITE);
+    col.add_flex_child(aspect_ratio_box.center(), 1.0);
+
+    // This method asks Druid to draw colored rectangles around our widgets,
+    // so we can visually inspect their layout rectangles.
+    col.debug_paint_layout()
+}*/
 
 fn main() {
-    unsafe {
-        SetProcessDpiAwareness(PROCESS_PER_MONITOR_DPI_AWARE).expect("SetProcessDpiAwareness should succeed");
-    }
-
     let active_monitors_list = Monitors::enum_active();
 
-    let wide_text = U16CString::from_str(
-        active_monitors_list
-            .list()
-            .iter()
-            .map(|mon| {
-                format!(
-                    "{}: {} x {}; ({}, {}, {}, {})",
-                    mon.id(),
-                    mon.width(),
-                    mon.height(),
-                    mon.left(),
-                    mon.top(),
-                    mon.right() - 1,
-                    mon.bottom() - 1
-                )
-            })
-            .collect::<Vec<String>>()
-            .join("\n"),
-    )
-    .expect("conversion from str to U16CString should work");
+    active_monitors_list.display_list();
 
-    let text_ptr = PCWSTR::from_raw(wide_text.as_ptr());
+    /*let window = WindowDesc::new(build_app()).title("Very flexible");
 
-    unsafe {
-        let _: i32 = Shell::ShellMessageBoxW(
-            HINSTANCE::default(),
-            HWND::default(),
-            text_ptr,
-            w!("Instant Desktop"),
-            MB_ICONASTERISK,
-        );
-    }
+    AppLauncher::with_window(window)
+        .log_to_console()
+        .launch(0)
+        .expect("launch failed");*/
 }
