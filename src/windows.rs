@@ -35,7 +35,8 @@ use windows::{
 
 #[derive(Clone, Data)]
 pub struct Monitor {
-    id: u32,
+    pub id: u32,
+    pub selected: bool,
     #[data(ignore)]
     display_monitor_handle: HMONITOR,
     #[data(ignore)]
@@ -46,6 +47,7 @@ impl Monitor {
     pub fn new(id: u32) -> Self {
         Monitor {
             id,
+            selected: false,
             display_monitor_handle: HMONITOR::default(),
             monitor_info: MONITORINFOEXW::default(),
         }

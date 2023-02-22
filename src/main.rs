@@ -14,23 +14,24 @@
 
 #![windows_subsystem = "windows"]
 
+use druid::im::Vector;
 use druid::{
     widget::{Align, Button, Label, SizedBox},
     AppDelegate, AppLauncher, Application, Data, DelegateCtx, Env, Event, KbKey, Point, Size,
     Widget, WindowDesc, WindowId, WindowState,
 };
 
-use instant_desktop::windows::Monitors;
+use instant_desktop::windows::{Monitor, Monitors};
 
 #[derive(Clone, Data)]
 struct State {
-    monitors: Monitors,
+    monitors: Vector<Monitor>,
 }
 
 fn main() {
-    let active_monitors = Monitors::enum_active();
+    let active_monitors = Monitors::enum_active().list();
 
-    let mut windows: Vec<u32> = active_monitors.list().iter().map(|mon| mon.id()).collect();
+    let mut windows: Vec<u32> = active_monitors.iter().map(|mon| mon.id).collect();
     let window = window_builder(windows.pop().unwrap(), &active_monitors).unwrap();
     let main_window = window.id;
 
@@ -46,9 +47,9 @@ fn main() {
         .expect("launch failed");
 }
 
-fn window_builder(id: u32, monitors: &Monitors) -> Option<WindowDesc<State>> {
-    let list = monitors.list();
-    let monitor = list.iter().find(|&mon| mon.id() == id);
+fn window_builder(id: u32, monitors: &Vector<Monitor>) -> Option<WindowDesc<State>> {
+    let list = monitors;
+    let monitor = list.iter().find(|&mon| mon.id == id);
 
     if let Some(monitor) = monitor {
         Some(
@@ -73,7 +74,7 @@ fn window_builder(id: u32, monitors: &Monitors) -> Option<WindowDesc<State>> {
 
 fn ui_builder(id: u32) -> impl Widget<State> {
     let id_label = Label::dynamic(move |data: &State, _| {
-        if let Some(mon) = data.monitors.list().iter().find(|&mon| mon.id() == id) {
+        if let Some(mon) = data.monitors.iter().find(|&mon| mon.id == id) {
             mon.id().to_string()
         } else {
             String::from("error: monitor not found")
@@ -82,9 +83,15 @@ fn ui_builder(id: u32) -> impl Widget<State> {
     .with_text_size(150.0);
 
     Align::centered(
-        SizedBox::new(Button::from_label(id_label))
-            .width(200.0)
-            .height(200.0),
+        SizedBox::new(Button::from_label(id_label).on_click(move |_, data, _| {
+            for i in 0..data.monitors.len() {
+                if data.monitors[i].id == id {
+                    data.monitors[i].selected = !data.monitors[i].selected;
+                }
+            }
+        }))
+        .width(200.0)
+        .height(200.0),
     )
 }
 
