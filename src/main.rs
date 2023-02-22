@@ -16,18 +16,8 @@
 
 use druid::{
     widget::{Align, Label},
-    AppDelegate,
-    AppLauncher,
-    Data,
-    DelegateCtx,
-    Env,
-    Event,
-    Point,
-    Size,
-    Widget,
-    WindowDesc,
-    WindowId,
-    // WindowState,
+    AppDelegate, AppLauncher, Application, Data, DelegateCtx, Env, Event, KbKey, Point, Size,
+    Widget, WindowDesc, WindowId, WindowState,
 };
 
 use instant_desktop::windows::Monitors;
@@ -73,7 +63,8 @@ fn window_builder(id: u32, monitors: &Monitors) -> Option<WindowDesc<State>> {
                     monitor.work_top().into(),
                 ))
                 .show_titlebar(false)
-                .resizable(false), //.set_window_state(WindowState::Maximized),
+                .resizable(false)
+                .set_window_state(WindowState::Maximized),
         )
     } else {
         None
@@ -107,7 +98,7 @@ impl AppDelegate<State> for Delegate {
         data: &mut State,
         env: &Env,
     ) -> Option<Event> {
-        match event {
+        match &event {
             Event::WindowConnected => {
                 if window_id == self.main_window {
                     for id in &self.windows {
@@ -116,32 +107,13 @@ impl AppDelegate<State> for Delegate {
                     }
                 }
             }
+            Event::KeyDown(event) => match event.key {
+                KbKey::Escape => Application::global().quit(),
+                _ => (),
+            },
             _ => (),
         }
 
         Some(event)
     }
-
-    /*fn window_added(
-        &mut self,
-        id: WindowId,
-        _handle: WindowHandle,
-        _data: &mut State,
-        _env: &Env,
-        _ctx: &mut DelegateCtx,
-    ) {
-        self.windows.push(id);
-    }
-
-    fn window_removed(
-        &mut self,
-        id: WindowId,
-        _data: &mut State,
-        _env: &Env,
-        _ctx: &mut DelegateCtx,
-    ) {
-        if let Some(pos) = self.windows.iter().position(|x| *x == id) {
-            self.windows.remove(pos);
-        }
-    }*/
 }
