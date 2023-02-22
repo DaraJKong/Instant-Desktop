@@ -15,7 +15,7 @@
 #![windows_subsystem = "windows"]
 
 use druid::{
-    widget::{Align, Label},
+    widget::{Align, Button, Label, SizedBox},
     AppDelegate, AppLauncher, Application, Data, DelegateCtx, Env, Event, KbKey, Point, Size,
     Widget, WindowDesc, WindowId, WindowState,
 };
@@ -72,15 +72,19 @@ fn window_builder(id: u32, monitors: &Monitors) -> Option<WindowDesc<State>> {
 }
 
 fn ui_builder(id: u32) -> impl Widget<State> {
+    let id_label = Label::dynamic(move |data: &State, _| {
+        if let Some(mon) = data.monitors.list().iter().find(|&mon| mon.id() == id) {
+            mon.id().to_string()
+        } else {
+            String::from("error: monitor not found")
+        }
+    })
+    .with_text_size(150.0);
+
     Align::centered(
-        Label::dynamic(move |data: &State, _| {
-            if let Some(mon) = data.monitors.list().iter().find(|&mon| mon.id() == id) {
-                mon.id().to_string()
-            } else {
-                String::from("error: monitor not found")
-            }
-        })
-        .with_text_size(100.0),
+        SizedBox::new(Button::from_label(id_label))
+            .width(200.0)
+            .height(200.0),
     )
 }
 
