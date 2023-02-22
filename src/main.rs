@@ -15,6 +15,8 @@
 #![windows_subsystem = "windows"]
 
 use druid::im::Vector;
+use druid::widget::EnvScope;
+use druid::{theme, Color};
 use druid::{
     widget::{Align, Button, Label, SizedBox},
     AppDelegate, AppLauncher, Application, Data, DelegateCtx, Env, Event, KbKey, Point, Size,
@@ -82,16 +84,26 @@ fn ui_builder(id: u32) -> impl Widget<State> {
     })
     .with_text_size(150.0);
 
-    Align::centered(
-        SizedBox::new(Button::from_label(id_label).on_click(move |_, data, _| {
-            for i in 0..data.monitors.len() {
-                if data.monitors[i].id == id {
-                    data.monitors[i].selected = !data.monitors[i].selected;
+    EnvScope::new(
+        move |env, data| {
+            for monitor in &data.monitors {
+                if monitor.id == id && monitor.selected {
+                    env.set(theme::BUTTON_DARK, Color::rgb8(76, 175, 80));
+                    env.set(theme::BUTTON_LIGHT, Color::rgb8(139, 195, 74));
                 }
             }
-        }))
-        .width(200.0)
-        .height(200.0),
+        },
+        Align::centered(
+            SizedBox::new(Button::from_label(id_label).on_click(move |_, data, _| {
+                for i in 0..data.monitors.len() {
+                    if data.monitors[i].id == id {
+                        data.monitors[i].selected = !data.monitors[i].selected;
+                    }
+                }
+            }))
+            .width(200.0)
+            .height(200.0),
+        ),
     )
 }
 
