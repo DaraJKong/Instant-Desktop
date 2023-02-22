@@ -1,11 +1,11 @@
 // Copyright 2023 Dara Kong
-// 
+//
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
-// 
+//
 //     http://www.apache.org/licenses/LICENSE-2.0
-// 
+//
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -19,10 +19,11 @@ use windows::{
         Graphics::Gdi::{
             self, DISPLAY_DEVICEW, DISPLAY_DEVICE_ACTIVE, HDC, HMONITOR, MONITORINFOEXW,
         },
-        UI::HiDpi::{SetProcessDpiAwareness, PROCESS_PER_MONITOR_DPI_AWARE}
+        // UI::HiDpi::{SetProcessDpiAwareness, PROCESS_PER_MONITOR_DPI_AWARE},
     },
 };
 
+use druid::{im::Vector, Data};
 use widestring::U16CString;
 use windows::{
     w,
@@ -32,10 +33,12 @@ use windows::{
     },
 };
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Data)]
 pub struct Monitor {
     id: u32,
+    #[data(ignore)]
     display_monitor_handle: HMONITOR,
+    #[data(ignore)]
     monitor_info: MONITORINFOEXW,
 }
 
@@ -76,6 +79,30 @@ impl Monitor {
         self.bottom() - self.top()
     }
 
+    pub fn work_left(&self) -> i32 {
+        self.monitor_info.monitorInfo.rcWork.left
+    }
+
+    pub fn work_top(&self) -> i32 {
+        self.monitor_info.monitorInfo.rcWork.top
+    }
+
+    pub fn work_right(&self) -> i32 {
+        self.monitor_info.monitorInfo.rcWork.right
+    }
+
+    pub fn work_bottom(&self) -> i32 {
+        self.monitor_info.monitorInfo.rcWork.bottom
+    }
+
+    pub fn work_width(&self) -> i32 {
+        self.work_right() - self.work_left()
+    }
+
+    pub fn work_height(&self) -> i32 {
+        self.work_bottom() - self.work_top()
+    }
+
     pub fn info_str(&self) -> String {
         format!(
             "{}: {} x {}; ({}, {}, {}, {})",
@@ -90,19 +117,23 @@ impl Monitor {
     }
 }
 
+#[derive(Clone, Data)]
 pub struct Monitors {
-    list: Vec<Monitor>,
+    list: Vector<Monitor>,
 }
 
 impl Monitors {
     pub fn new() -> Self {
-        Self { list: Vec::new() }
+        Self {
+            list: Vector::new(),
+        }
     }
 
     pub fn enum_active() -> Self {
-        unsafe {
-            SetProcessDpiAwareness(PROCESS_PER_MONITOR_DPI_AWARE).expect("SetProcessDpiAwareness should succeed");
-        }
+        /*unsafe {
+            SetProcessDpiAwareness(PROCESS_PER_MONITOR_DPI_AWARE)
+                .expect("SetProcessDpiAwareness should succeed");
+        }*/
 
         let mut active_monitors_list = Monitors::new();
 
@@ -152,10 +183,10 @@ impl Monitors {
     }
 
     pub fn add(&mut self, monitor: Monitor) {
-        self.list.push(monitor);
+        self.list.push_back(monitor);
     }
 
-    pub fn list(&self) -> Vec<Monitor> {
+    pub fn list(&self) -> Vector<Monitor> {
         self.list.clone()
     }
 
@@ -163,16 +194,14 @@ impl Monitors {
         let wide_text = U16CString::from_str(
             self.list()
                 .iter()
-                .map(|mon| {
-                    mon.info_str()
-                })
+                .map(|mon| mon.info_str())
                 .collect::<Vec<String>>()
                 .join("\n"),
         )
         .expect("conversion from str to U16CString should work");
-        
+
         let text_ptr = PCWSTR::from_raw(wide_text.as_ptr());
-        
+
         unsafe {
             let _: i32 = Shell::ShellMessageBoxW(
                 HINSTANCE::default(),
