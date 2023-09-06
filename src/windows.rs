@@ -12,24 +12,20 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use windows::{
-    core::PCWSTR,
-    Win32::{
-        Foundation::{BOOL, LPARAM, RECT},
-        Graphics::Gdi::{
-            self, DISPLAY_DEVICEW, DISPLAY_DEVICE_ACTIVE, HDC, HMONITOR, MONITORINFOEXW,
-        },
-        // UI::HiDpi::{SetProcessDpiAwareness, PROCESS_PER_MONITOR_DPI_AWARE},
-    },
-};
-
 use druid::{im::Vector, Data};
 use widestring::U16CString;
 use windows::{
-    w,
+    core::{w, PCWSTR},
     Win32::{
-        Foundation::{HINSTANCE, HWND},
-        UI::{Shell, WindowsAndMessaging::MB_ICONASTERISK},
+        Foundation::{BOOL, HINSTANCE, HWND, LPARAM, RECT},
+        Graphics::Gdi::{
+            self, DISPLAY_DEVICEW, DISPLAY_DEVICE_ACTIVE, HDC, HMONITOR, MONITORINFOEXW,
+        },
+        UI::{
+            HiDpi::{SetProcessDpiAwareness, PROCESS_DPI_UNAWARE},
+            Shell,
+            WindowsAndMessaging::MB_ICONASTERISK,
+        },
     },
 };
 
@@ -132,10 +128,10 @@ impl Monitors {
     }
 
     pub fn enum_active() -> Self {
-        /*unsafe {
-            SetProcessDpiAwareness(PROCESS_PER_MONITOR_DPI_AWARE)
+        unsafe {
+            SetProcessDpiAwareness(PROCESS_DPI_UNAWARE)
                 .expect("SetProcessDpiAwareness should succeed");
-        }*/
+        }
 
         let mut active_monitors_list = Monitors::new();
 
