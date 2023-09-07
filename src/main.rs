@@ -15,13 +15,13 @@
 #![windows_subsystem = "windows"]
 
 use druid::im::Vector;
-use druid::widget::{Click, Controller, EnvScope, Painter};
-use druid::{theme, Color, EventCtx, Insets};
+use druid::widget::{Controller, EnvScope};
 use druid::{
-    widget::{Align, Button, Flex, Label, SizedBox},
-    AppDelegate, AppLauncher, Application, Data, DelegateCtx, Env, Event, KbKey, Point,
-    RenderContext, Size, Widget, WidgetExt, WindowDesc, WindowId, WindowState,
+    widget::{Label, SizedBox},
+    AppDelegate, AppLauncher, Application, Data, DelegateCtx, Env, Event, KbKey, Point, Size,
+    Widget, WidgetExt, WindowDesc, WindowId,
 };
+use druid::{Color, EventCtx};
 
 use instant_desktop::palette;
 use instant_desktop::windows::{Monitor, Monitors};
