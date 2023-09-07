@@ -10,6 +10,8 @@ edition = "2021"
 [dependencies]
 druid = { version = "0.8", features = ["im"] }
 widestring = "1.0"
+directories = "5.0"
+lazy-regex = "3.0"
 
 [dependencies.windows]
 version = "0.51"
