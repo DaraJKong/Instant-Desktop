@@ -15,13 +15,17 @@
 #![windows_subsystem = "windows"]
 
 use druid::AppLauncher;
-use instant_desktop::{palette, windows::Monitors, Delegate, State};
+use instant_desktop::{
+    app::{self, Delegate, State},
+    palette,
+    windows::Monitors,
+};
 
 fn main() {
     let active_monitors = Monitors::enum_active().list();
 
     let mut windows: Vec<u32> = active_monitors.iter().map(|mon| mon.id).collect();
-    let window = instant_desktop::window_builder(windows.pop().unwrap(), &active_monitors).unwrap();
+    let window = app::window_builder(windows.pop().unwrap(), &active_monitors).unwrap();
     let main_window = window.id;
 
     AppLauncher::with_window(window)
