@@ -12,15 +12,18 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use druid::{
-    widget::{Label, SizedBox},
-    AppDelegate, Application, Data, DelegateCtx, Env, Event, KbKey, Point, Size, Widget, WidgetExt,
-    WindowDesc, WindowId,
-};
-use druid::{Color, EventCtx};
+use std::fs;
 
-use crate::palette;
+use directories::UserDirs;
+use druid::{
+    im::Vector,
+    widget::{Controller, EnvScope, Label, SizedBox},
+    AppDelegate, Application, Color, Data, DelegateCtx, Env, Event, EventCtx, KbKey, Point, Size,
+    Widget, WidgetExt, WindowDesc, WindowId,
+};
+
 use crate::windows::Monitor;
+use crate::{connection, palette};
 
 #[derive(Clone, Data)]
 pub struct State {
@@ -34,6 +37,19 @@ impl State {
             monitors,
             hovered_id,
         }
+    }
+
+    pub fn get_selected(&self) -> Vec<u32> {
+        self.monitors
+            .iter()
+            .filter_map(|monitor| {
+                if monitor.selected {
+                    Some(monitor.id)
+                } else {
+                    None
+                }
+            })
+            .collect()
     }
 }
 
@@ -167,7 +183,21 @@ impl AppDelegate<State> for Delegate {
                 }
             }
             Event::KeyDown(event) => match event.key {
-                KbKey::Escape => Application::global().quit(),
+                KbKey::Escape | KbKey::Backspace | KbKey::Delete => Application::global().quit(),
+                KbKey::Enter => {
+                    if let Some(user_dirs) = UserDirs::new() {
+                        let mut default_path = user_dirs.document_dir().unwrap().to_path_buf();
+
+                        fs::create_dir_all(&default_path).expect("failed to create directory");
+                        default_path.push("base.rdp");
+
+                        connection::start_rdc_session(&default_path, data.get_selected());
+
+                        Application::global().quit();
+                    } else {
+                        panic!("failed to get user directories")
+                    }
+                }
                 _ => (),
             },
             _ => (),
