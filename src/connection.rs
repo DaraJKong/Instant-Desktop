@@ -12,14 +12,15 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use directories::ProjectDirs;
 use lazy_regex::{regex, regex_replace_all};
-use std::{fs, path::Path, process::Command};
+use std::{fs, process::Command};
 
-pub fn start_rdc_session(base_config_path: &Path, selected_monitors: Vec<u32>) {
+use crate::config::Config;
+
+pub fn start_rdc_session(config: &Config, selected_monitors: Vec<u32>) {
     // read base file
     let mut rdp_config =
-        fs::read_to_string(base_config_path).expect("failed to read base config file");
+        fs::read_to_string(&config.base_config_path).expect("failed to read base config file");
 
     // use_multimon parameter
     let use_multimon_r = regex!(r#"^(use\smultimon:i:).*$"#im);
@@ -56,25 +57,18 @@ pub fn start_rdc_session(base_config_path: &Path, selected_monitors: Vec<u32>) {
     }
 
     // write custom file
-    if let Some(project_dirs) = ProjectDirs::from("", "", "Instant-Desktop") {
-        let mut path = project_dirs.data_dir().to_path_buf();
+    let custom_rdp_path = config.directories.custom_rdp_path();
 
-        fs::create_dir_all(&path).expect("failed to create directory");
-        path.push("custom.rdp");
-
-        if fs::write(&path, rdp_config).is_ok() {
-            // start remote desktop connection
-            Command::new("mstsc")
-                .args(["/edit", path.to_str().unwrap()])
-                .spawn()
-                .expect("failed to execute process");
-        } else {
-            panic!(
-                "failed to write custom config file: {}",
-                path.to_str().unwrap()
-            );
-        }
+    if fs::write(&custom_rdp_path, rdp_config).is_ok() {
+        // start remote desktop connection
+        Command::new("mstsc")
+            .args(["/edit", custom_rdp_path.to_str().unwrap()])
+            .spawn()
+            .expect("failed to execute process");
     } else {
-        panic!("failed to get project directories");
+        panic!(
+            "failed to write custom config file: {}",
+            custom_rdp_path.to_str().unwrap()
+        );
     }
 }
