@@ -17,15 +17,19 @@
 use druid::AppLauncher;
 use instant_desktop::{
     app::{self, Delegate, State},
+    config::Config,
     palette,
     windows::Monitors,
 };
 
 fn main() {
+    let mut config = Config::default();
+    config.load();
+
     let active_monitors = Monitors::enum_active().list();
 
     let mut windows: Vec<u32> = active_monitors.iter().map(|mon| mon.id).collect();
-    let window = app::window_builder(windows.pop().unwrap(), &active_monitors).unwrap();
+    let window = app::window_builder(&config, windows.pop().unwrap(), &active_monitors).unwrap();
     let main_window = window.id;
 
     AppLauncher::with_window(window)
@@ -34,6 +38,6 @@ fn main() {
         .configure_env(|env, _| {
             palette::add_to_env(env);
         })
-        .launch(State::new(active_monitors, u32::default()))
+        .launch(State::new(config, active_monitors, u32::default()))
         .expect("launch failed");
 }

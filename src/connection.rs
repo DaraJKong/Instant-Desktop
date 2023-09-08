@@ -61,8 +61,16 @@ pub fn start_rdc_session(config: &Config, selected_monitors: Vec<u32>) {
 
     if fs::write(&custom_rdp_path, rdp_config).is_ok() {
         // start remote desktop connection
+        let mut mstsc_args = if config.edit_connection {
+            vec!["/edit"]
+        } else {
+            Vec::new()
+        };
+
+        mstsc_args.push(custom_rdp_path.to_str().unwrap());
+
         Command::new("mstsc")
-            .args(["/edit", custom_rdp_path.to_str().unwrap()])
+            .args(mstsc_args)
             .spawn()
             .expect("failed to execute process");
     } else {

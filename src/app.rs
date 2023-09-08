@@ -30,10 +30,7 @@ pub struct State {
 }
 
 impl State {
-    pub fn new(monitors: Vector<Monitor>, hovered_id: u32) -> Self {
-        let mut config = Config::default();
-        config.load();
-
+    pub fn new(config: Config, monitors: Vector<Monitor>, hovered_id: u32) -> Self {
         Self {
             config,
             monitors,
@@ -55,16 +52,36 @@ impl State {
     }
 }
 
-pub fn window_builder(id: u32, monitors: &Vector<Monitor>) -> Option<WindowDesc<State>> {
+pub fn window_builder(
+    config: &Config,
+    id: u32,
+    monitors: &Vector<Monitor>,
+) -> Option<WindowDesc<State>> {
     let list = monitors;
     let monitor = list.iter().find(|&mon| mon.id == id);
 
     if let Some(monitor) = monitor {
+        let (width, height, left, top) = if config.fullscreen {
+            (
+                monitor.width(),
+                monitor.height(),
+                monitor.left(),
+                monitor.top(),
+            )
+        } else {
+            (
+                monitor.work_width(),
+                monitor.work_height(),
+                monitor.work_left(),
+                monitor.work_top(),
+            )
+        };
+
         Some(
             WindowDesc::new(ui_builder(id))
                 .title("Instant Desktop")
-                .window_size(Size::new(monitor.width().into(), monitor.height().into()))
-                .set_position(Point::new(monitor.left().into(), monitor.top().into()))
+                .window_size(Size::new(width.into(), height.into()))
+                .set_position(Point::new(left.into(), top.into()))
                 .show_titlebar(false)
                 .resizable(false)
                 .set_always_on_top(true),
@@ -179,7 +196,7 @@ impl AppDelegate<State> for Delegate {
             Event::WindowConnected => {
                 if window_id == self.main_window {
                     for id in &self.windows {
-                        let window = window_builder(*id, &data.monitors).unwrap();
+                        let window = window_builder(&data.config, *id, &data.monitors).unwrap();
                         ctx.new_window(window);
                     }
                 }
