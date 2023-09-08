@@ -64,9 +64,10 @@ pub fn start_rdc_session(base_config_path: &Path, selected_monitors: Vec<u32>) {
 
         if fs::write(&path, rdp_config).is_ok() {
             // start remote desktop connection
-            let path_arg = format!("\"{}\"", path.to_str().unwrap());
-
-            Command::new("mstsc").args(["/edit", &path_arg]);
+            Command::new("mstsc")
+                .args(["/edit", path.to_str().unwrap()])
+                .spawn()
+                .expect("failed to execute process");
         } else {
             panic!(
                 "failed to write custom config file: {}",
