@@ -13,6 +13,7 @@
 // limitations under the License.
 
 pub mod app;
+pub mod config;
 pub mod connection;
 pub mod palette;
 pub mod windows;
