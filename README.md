@@ -65,10 +65,12 @@ To consult or modify Instant Desktop's parameters, open the configuration file "
 - [ ] Enable user to change settings easily
 - [ ] How to use tips
 - [ ] Shortcuts reminder
-- [ ] Notify user when selected monitors are of different resolutions and might not give expected results
 - [ ] Remember last monitors selection
-- [ ] Workaround to use monitors of different resolutions
+- [ ] Add a new icon
+- [ ] Customizable theme
+- [ ] Notify user when selected monitors are of different resolutions and might not give expected results
 - [ ] Create automatic installer and uninstaller
+- [ ] Workaround to use monitors of different resolutions
 
 ## License
 
