@@ -58,6 +58,8 @@ pub fn start_rdc_session(base_config_path: &Path, selected_monitors: Vec<u32>) {
     // write custom file
     if let Some(project_dirs) = ProjectDirs::from("", "", "Instant-Desktop") {
         let mut path = project_dirs.data_dir().to_path_buf();
+
+        fs::create_dir_all(&path).expect("failed to create directory");
         path.push("custom.rdp");
 
         if fs::write(&path, rdp_config).is_ok() {
@@ -66,7 +68,10 @@ pub fn start_rdc_session(base_config_path: &Path, selected_monitors: Vec<u32>) {
 
             Command::new("mstsc").args(["/edit", &path_arg]);
         } else {
-            panic!("failed to write custom config file");
+            panic!(
+                "failed to write custom config file: {}",
+                path.to_str().unwrap()
+            );
         }
     } else {
         panic!("failed to get project directories");
