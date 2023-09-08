@@ -15,15 +15,18 @@
 use std::{fs, path::PathBuf};
 
 use directories::{ProjectDirs, UserDirs};
+use druid::Data;
 use serde::{Deserialize, Serialize};
 
-#[derive(Serialize, Deserialize)]
-struct Config {
+#[derive(Serialize, Deserialize, Data, Clone)]
+pub struct Config {
     #[serde(skip)]
-    directories: Directories,
-    base_config_path: PathBuf,
-    fullscreen: bool,
-    edit_connection: bool,
+    #[data(ignore)]
+    pub directories: Directories,
+    #[data(same_fn = "PartialEq::eq")]
+    pub base_config_path: PathBuf,
+    pub fullscreen: bool,
+    pub edit_connection: bool,
 }
 
 impl Default for Config {
@@ -48,20 +51,23 @@ impl Default for Config {
 }
 
 impl Config {
-    fn save(&self) {
+    pub fn save(&self) {
         let config_string = serde_yaml::to_string(self).expect("failed to serialize");
         fs::write(self.directories.config_path(), config_string)
             .expect("failed to write config file");
     }
 
-    fn load(&mut self) {
-        let config_content =
-            fs::read_to_string(self.directories.config_path()).expect("failed to read config");
-        *self = serde_yaml::from_str(&config_content).expect("failed to deserialize");
+    pub fn load(&mut self) {
+        if let Ok(config_content) = fs::read_to_string(self.directories.config_path()) {
+            *self = serde_yaml::from_str(&config_content).expect("failed to deserialize");
+        } else {
+            self.save();
+        }
     }
 }
 
-struct Directories {
+#[derive(Clone)]
+pub struct Directories {
     project: ProjectDirs,
     user: UserDirs,
 }
@@ -77,14 +83,21 @@ impl Default for Directories {
 }
 
 impl Directories {
-    fn config_path(&self) -> PathBuf {
+    pub fn config_path(&self) -> PathBuf {
         let mut config_path = self.project.config_dir().to_path_buf();
         config_path.push("config.yaml");
 
         config_path
     }
 
-    fn document_dir(&self) -> PathBuf {
+    pub fn document_dir(&self) -> PathBuf {
         self.user.document_dir().unwrap().to_path_buf()
+    }
+
+    pub fn custom_rdp_path(&self) -> PathBuf {
+        let mut custom_rdp_path = self.project.data_dir().to_path_buf();
+        custom_rdp_path.push("custom.rdp");
+
+        custom_rdp_path
     }
 }
