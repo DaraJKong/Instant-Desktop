@@ -136,7 +136,6 @@ impl Monitors {
         let mut active_monitors_list = Monitors::new();
 
         let mut display_device = DISPLAY_DEVICEW::default();
-        let device_name_ptr = PCWSTR::from_raw(&mut display_device.DeviceName as *mut _);
 
         let mut i = 0;
 
@@ -150,10 +149,7 @@ impl Monitors {
                 break;
             }
 
-            let handle =
-                unsafe { Gdi::CreateDCW(device_name_ptr, device_name_ptr, PCWSTR::null(), None) };
-
-            if !handle.is_invalid() && display_device.StateFlags & DISPLAY_DEVICE_ACTIVE == 1 {
+            if display_device.StateFlags & DISPLAY_DEVICE_ACTIVE == 1 {
                 let mut monitor = Monitor::new(i);
 
                 monitor.monitor_info.szDevice = display_device.DeviceName;
@@ -201,7 +197,7 @@ impl Monitors {
         let text_ptr = PCWSTR::from_raw(wide_text.as_ptr());
 
         unsafe {
-            let _: i32 = Shell::ShellMessageBoxW(
+            Shell::ShellMessageBoxW(
                 HINSTANCE::default(),
                 HWND::default(),
                 text_ptr,
