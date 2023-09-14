@@ -69,7 +69,7 @@ pub fn start_rdc_session(config: &Config, selected_monitors: Vec<u32>) {
 
         mstsc_args.push(custom_rdp_path.to_str().unwrap());
 
-        Command::new("mstsc")
+        Command::new("C:\\Windows\\system32\\mstsc")
             .args(mstsc_args)
             .spawn()
             .expect("failed to execute process");
